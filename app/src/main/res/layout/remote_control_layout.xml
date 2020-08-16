@@ -31,18 +31,18 @@
         app:layout_constraintStart_toEndOf="@+id/rc_on"
         app:layout_constraintTop_toTopOf="parent" />
 
+
     <Button
         android:id="@+id/rc_preset1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Preset 1"
         app:layout_constraintBottom_toTopOf="@+id/rc_sub_bright"
-        app:layout_constraintHorizontal_bias="0.256"
+        app:layout_constraintHorizontal_bias="0.077"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rc_on"
-        app:layout_constraintVertical_bias="0.08" />
-
+        app:layout_constraintVertical_bias="0.102" />
 
     <Button
         android:id="@+id/rc_preset2"
@@ -51,7 +51,20 @@
         android:layout_marginBottom="4dp"
         android:text="Preset 2"
         app:layout_constraintBottom_toTopOf="@+id/rc_4000k"
-        app:layout_constraintHorizontal_bias="0.777"
+        app:layout_constraintHorizontal_bias="0.467"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.701" />
+
+    <Button
+        android:id="@+id/rc_preset3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="Preset 3"
+        app:layout_constraintBottom_toTopOf="@+id/rc_4000k"
+        app:layout_constraintHorizontal_bias="0.835"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -136,11 +149,11 @@
         android:layout_height="50dp"
         android:background="@drawable/ic_reduce_bright"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.237"
+        app:layout_constraintHorizontal_bias="0.205"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.726" />
+        app:layout_constraintVertical_bias="0.61" />
 
     <TextView
         android:id="@+id/rc_bright_value"
@@ -148,7 +161,7 @@
         android:layout_height="41dp"
         android:layout_marginEnd="44dp"
         android:layout_marginRight="44dp"
-        android:layout_marginBottom="132dp"
+        android:layout_marginBottom="212dp"
         android:text="50%"
         android:textAlignment="gravity"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
@@ -163,11 +176,34 @@
         android:layout_height="48dp"
         android:background="@drawable/ic_add_bright"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.794"
+        app:layout_constraintHorizontal_bias="0.769"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.724" />
+        app:layout_constraintVertical_bias="0.609" />
+
+    <androidx.appcompat.widget.AppCompatSpinner
+        android:id="@+id/presetSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
+        app:layout_constraintBottom_toTopOf="@+id/rc_disconnect"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.198"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.84" />
+
+    <Button
+        android:id="@+id/rc_savePresetBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save Current Setting"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.767"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.773" />
 
     <Button
         android:id="@+id/rc_disconnect"
