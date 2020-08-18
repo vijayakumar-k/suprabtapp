@@ -37,6 +37,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         select_device_refresh.setOnClickListener{ pairedDeviceList() }
+
+        device_discover.setOnClickListener{ showDiscoverPage() }
     }
 
     private fun pairedDeviceList() {
@@ -63,6 +65,11 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra(EXTRA_ADDRESS, address)
             startActivity(intent)
         }
+    }
+
+    private fun showDiscoverPage() {
+        val intent = Intent(this, ScanAndPairActivity::class.java)
+        startActivity(intent)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

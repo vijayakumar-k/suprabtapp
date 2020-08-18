@@ -42,8 +42,15 @@ class ScanAndPairActivity: AppCompatActivity() {
             val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             startActivityForResult(enableBluetoothIntent, REQUEST_ENABLE_BLUETOOTH)
         }
+        if (bAdapter!!.isDiscovering) {
+            bAdapter!!.cancelDiscovery();
+        }
+
+
+        registerBluetoothReceiver()
 
         var result = bAdapter!!.startDiscovery()
+
 
         if(!result) {
             Toast.makeText(this, "Unable to scan devices", Toast.LENGTH_LONG).show()
@@ -53,11 +60,9 @@ class ScanAndPairActivity: AppCompatActivity() {
             // Show Loading Gif
         }
 
-        registerBluetoothReceiver()
-        initializeListView()
     }
 
-    fun initializeListView() {
+    private fun initializeListView() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, discoveredDeviceNameList)
         discoveredList.adapter = adapter
         select_device_list.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
@@ -67,7 +72,7 @@ class ScanAndPairActivity: AppCompatActivity() {
         }
     }
 
-    fun registerBluetoothReceiver() {
+    private fun registerBluetoothReceiver() {
         bReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val action = intent.action
@@ -77,9 +82,11 @@ class ScanAndPairActivity: AppCompatActivity() {
                     discoveredDeviceNameList.add(device.name)
                     discoveredDeviceList.add(device)
                 }
+                initializeListView()
             }
         }
-        val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
+        val filter = IntentFilter()
+        filter.addAction(BluetoothDevice.ACTION_FOUND)
         registerReceiver(bReceiver, filter)
 
     }
