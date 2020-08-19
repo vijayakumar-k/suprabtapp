@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_ADDRESS: String = "Device_address"
+        const val EXTRA_NAME: String = "Device_name"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,18 +39,20 @@ class MainActivity : AppCompatActivity() {
 
         select_device_refresh.setOnClickListener{ pairedDeviceList() }
 
-        device_discover.setOnClickListener{ showDiscoverPage() }
+//        device_discover.setOnClickListener{ showDiscoverPage() }
     }
 
     private fun pairedDeviceList() {
         pairedDevices = bAdapter!!.bondedDevices
         val deviceList : ArrayList<BluetoothDevice> = ArrayList()
         val deviceNameList : ArrayList<String> = ArrayList()
-        if (!pairedDevices.isEmpty()) {
+        if (pairedDevices.isNotEmpty()) {
             for (device: BluetoothDevice in pairedDevices) {
-                deviceList.add(device)
-                deviceNameList.add(device.name)
-                Log.i("device", ""+device.name)
+                if(device.name.startsWith("HC-")) {
+                    deviceList.add(device)
+                    deviceNameList.add(device.name)
+                    Log.i("device", "" + device.name)
+                }
             }
         } else {
             Toast.makeText(this, "no paired bluetooth devices found", Toast.LENGTH_LONG).show()
@@ -63,6 +66,7 @@ class MainActivity : AppCompatActivity() {
 
             val intent = Intent(this, RemoteControlActivity::class.java)
             intent.putExtra(EXTRA_ADDRESS, address)
+            intent.putExtra(EXTRA_NAME, device.name)
             startActivity(intent)
         }
     }

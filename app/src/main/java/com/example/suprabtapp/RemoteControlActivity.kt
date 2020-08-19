@@ -5,22 +5,23 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
-import android.os.*
+import android.content.Intent
+import android.os.AsyncTask
+import android.os.Bundle
+import android.os.Vibrator
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.remote_control_layout.*
-import java.io.IOException
+import java.io.*
+import java.text.SimpleDateFormat
 import java.util.*
-
 
 class RemoteControlActivity : AppCompatActivity() {
 
     companion object {
-        var preset1 = "OFF"
-        var preset2 = "OFF"
         var currentBright = ""
         var currentColor = ""
         var m_myUUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
@@ -30,6 +31,17 @@ class RemoteControlActivity : AppCompatActivity() {
         lateinit var m_bluetoothAdapter: BluetoothAdapter
         var m_isConnected: Boolean = false
         lateinit var m_address: String
+        lateinit var m_name: String
+
+        var colorCommandMap = mapOf<String, String>(
+            "C20" to "3000K",
+            "C800" to "3500K",
+            "C1600" to "4000K",
+            "C2400" to "4500K",
+            "C3200" to "5000K",
+            "C4000" to "5700K"
+        )
+
         var brightCommandMap = mapOf<String, String>(
             "D20" to "1%",
             "D200" to "5%",
@@ -44,26 +56,55 @@ class RemoteControlActivity : AppCompatActivity() {
             "D3600" to "90%",
             "D4000" to "100%"
         )
-        var presetCommandMap = mutableMapOf<String, MutableList<String>>(
-            "Preset1" to mutableListOf<String>("D4000"),
-            "Preset2" to mutableListOf<String>("D4000"),
-            "Preset3" to mutableListOf<String>("D4000")
+        var presetCommandMap = mutableMapOf<String, String>(
+            "Preset1" to "D4000",
+            "Preset2" to "D4000",
+            "Preset3" to "D4000"
         )
         var presetArray = arrayOf<String>("Preset1", "Preset2", "Preset3")
+        var presetFilenames = mutableMapOf<String, String>(
+            "Preset1" to "preset1.txt",
+            "Preset2" to "preset2txt",
+            "Preset3" to "preset3.txt"
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.remote_control_layout)
         m_address = intent.getStringExtra(MainActivity.EXTRA_ADDRESS)
+        m_name = intent.getStringExtra(MainActivity.EXTRA_NAME)
+        device_name.text = m_name;
 
         spinner = findViewById(R.id.presetSpinner)
-        val spinnerAdapter = ArrayAdapter(this,  android.R.layout.simple_spinner_item, presetArray)
+        val spinnerAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, presetArray)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = spinnerAdapter
 
         ConnectToDevice(this).execute()
 
+        loadSavedPresetSettings()
+        setRemoteListeners()
+    }
+
+    private fun loadSavedPresetSettings(){
+        for(preset in presetArray){
+            val fileName = presetFilenames[preset]
+            val fi = File(this.filesDir, fileName)
+            fi.createNewFile()
+            this.openFileInput(fileName).use { stream ->
+                val text = stream.bufferedReader().use {
+                    it.readText()
+                }
+                if(text.isNotBlank()){
+                    presetCommandMap[preset] = text
+                }
+            }
+
+        }
+    }
+
+    private fun setRemoteListeners(){
         rc_off.setOnClickListener { sendCommand("P0") }
         rc_on.setOnClickListener { sendCommand("P1") }
         rc_preset1.setOnClickListener { sendPresetCommand(presetArray[0]) }
@@ -103,10 +144,11 @@ class RemoteControlActivity : AppCompatActivity() {
         }
         rc_savePresetBtn.setOnClickListener { savePreset() }
         rc_disconnect.setOnClickListener { disconnect() }
+        rc_logs.setOnClickListener{ showRemoteLogs() }
     }
 
     private fun sendCommand(input: String) {
-        if (m_bluetoothSocket != null) {
+        if (m_bluetoothSocket != null && input.isNotBlank()) {
             try{
                 vibratePhone()
                 if(input.startsWith("D")) {
@@ -114,10 +156,15 @@ class RemoteControlActivity : AppCompatActivity() {
                     if(brightCommandMap.containsKey(currentBright))
                         rc_bright_value.text = brightCommandMap[input]
                 }
-                else if(input.startsWith("C"))
+                else if(input.startsWith("C")) {
                     currentColor = input
+                }
                 m_bluetoothSocket!!.outputStream.write(input.toByteArray())
-            } catch(e: IOException) {
+                val log = constructLog(input)
+                if(log.isNotBlank()) {
+                    logCommand(log)
+                }
+            } catch (e: IOException) {
                 e.printStackTrace()
             }
         }
@@ -126,7 +173,8 @@ class RemoteControlActivity : AppCompatActivity() {
     private fun sendPresetCommand(presetTxt: String) {
         val presetCommands = presetCommandMap[presetTxt]
         if (presetCommands != null) {
-            for(command in presetCommands)
+            val arrayCommands = presetCommands.split(',').toTypedArray()
+            for(command in arrayCommands)
                 sendCommand(command)
         }
     }
@@ -145,8 +193,15 @@ class RemoteControlActivity : AppCompatActivity() {
             Toast.makeText(this, "No Setting was set", Toast.LENGTH_LONG).show()
             return;
         }
-        presetCommandMap[selectedPreset] = currentSetting
+        saveToPresetFile(selectedPreset, currentSetting.joinToString())
         Toast.makeText(this, "Selected setting saved as $selectedPreset", Toast.LENGTH_LONG).show()
+    }
+
+    private fun saveToPresetFile(presetId: String, command: String){
+        val fileName = presetFilenames[presetId]
+        val fOut: FileOutputStream = openFileOutput(fileName, Context.MODE_PRIVATE)
+        fOut.write(command.toByteArray())
+        fOut.close()
     }
 
     private fun vibratePhone() {
@@ -165,6 +220,51 @@ class RemoteControlActivity : AppCompatActivity() {
             }
         }
         finish()
+    }
+
+    private fun logCommand(log: String){
+        val fileName = m_name + "_logs.txt"
+        val fi = File(this.filesDir, fileName)
+        fi.createNewFile()
+        val fos: FileOutputStream = FileOutputStream(fi, true)
+        val bw = BufferedWriter(OutputStreamWriter(fos))
+        bw.write(log)
+        bw.newLine()
+        bw.close()
+    }
+
+    private fun constructLog(command: String): String{
+        var log: String = ""
+        when {
+            command == "P0" -> {
+                log += "Switched OFF"
+            }
+            command == "P1" -> {
+                log += "Switched ON"
+            }
+            command.startsWith("C") -> {
+                log += "Color set as " + colorCommandMap[command]
+            }
+            command.startsWith("D") -> {
+                log += "Brightness changed to " + brightCommandMap[command]
+            }
+        }
+        val time = getCurrentTime()
+        if(time.isNotBlank())
+            log += " at $time"
+        return log
+    }
+
+    private fun getCurrentTime(): String{
+        val pattern = "MMM d, yyyy HH:mm:ss a "
+        val simpleDateFormat = SimpleDateFormat(pattern)
+        return simpleDateFormat.format(Date())
+    }
+
+    private fun showRemoteLogs() {
+        val intent = Intent(this, RemoteLogs::class.java)
+        intent.putExtra(MainActivity.EXTRA_NAME, m_name)
+        startActivity(intent)
     }
 
     private class ConnectToDevice(c: Context) : AsyncTask<Void, Void, String>() {
