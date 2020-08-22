@@ -24,6 +24,7 @@ class RemoteControlActivity : AppCompatActivity() {
     companion object {
         var currentBright = ""
         var currentColor = ""
+        var isPowerOn = false
         var m_myUUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
         lateinit var spinner: Spinner
         var m_bluetoothSocket: BluetoothSocket? = null
@@ -74,7 +75,7 @@ class RemoteControlActivity : AppCompatActivity() {
         setContentView(R.layout.remote_control_layout)
         m_address = intent.getStringExtra(MainActivity.EXTRA_ADDRESS)
         m_name = intent.getStringExtra(MainActivity.EXTRA_NAME)
-        device_name.text = m_name;
+        remote_toolbar.title = m_name;
 
         spinner = findViewById(R.id.presetSpinner)
         val spinnerAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, presetArray)
@@ -105,8 +106,7 @@ class RemoteControlActivity : AppCompatActivity() {
     }
 
     private fun setRemoteListeners(){
-        rc_off.setOnClickListener { sendCommand("P0") }
-        rc_on.setOnClickListener { sendCommand("P1") }
+        rc_power.setOnClickListener { powerCommand() }
         rc_preset1.setOnClickListener { sendPresetCommand(presetArray[0]) }
         rc_preset2.setOnClickListener { sendPresetCommand(presetArray[1]) }
         rc_preset3.setOnClickListener { sendPresetCommand(presetArray[2]) }
@@ -168,6 +168,19 @@ class RemoteControlActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
         }
+    }
+
+    private fun powerCommand() {
+        if(isPowerOn){
+            sendCommand("P0")
+            rc_power.setBackgroundResource(R.drawable.ic_power_off)
+            Toast.makeText(this, "Light is switched off", Toast.LENGTH_LONG).show()
+        } else {
+            sendCommand("P1")
+            rc_power.setBackgroundResource(R.drawable.ic_power_on)
+            Toast.makeText(this, "Light is switched on", Toast.LENGTH_LONG).show()
+        }
+        isPowerOn = !isPowerOn
     }
 
     private fun sendPresetCommand(presetTxt: String) {
@@ -269,10 +282,7 @@ class RemoteControlActivity : AppCompatActivity() {
 
     private class ConnectToDevice(c: Context) : AsyncTask<Void, Void, String>() {
         private var connectSuccess: Boolean = true
-        private val context: Context
-        init {
-            this.context = c
-        }
+        private val context: Context = c
         override fun onPreExecute() {
             super.onPreExecute()
             m_progress = ProgressDialog.show(context, "Connecting...", "please wait")

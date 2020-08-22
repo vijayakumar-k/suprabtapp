@@ -20,7 +20,7 @@ class RemoteLogs : AppCompatActivity() {
         setContentView(R.layout.activity_remote_logs)
 
         val deviceName = intent.getStringExtra(MainActivity.EXTRA_NAME)
-        logs_device_name.text = deviceName
+        remote_logs_toolbar.title = "Logs - $deviceName"
         loadSavedLogs(deviceName)
         showRemoteLogs()
     }
