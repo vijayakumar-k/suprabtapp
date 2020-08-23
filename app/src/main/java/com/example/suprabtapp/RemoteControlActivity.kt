@@ -159,11 +159,11 @@ class RemoteControlActivity : AppCompatActivity() {
                 else if(input.startsWith("C")) {
                     currentColor = input
                 }
-                m_bluetoothSocket!!.outputStream.write(input.toByteArray())
                 val log = constructLog(input)
                 if(log.isNotBlank()) {
                     logCommand(log)
                 }
+                m_bluetoothSocket!!.outputStream.write(input.toByteArray())
             } catch (e: IOException) {
                 e.printStackTrace()
             }

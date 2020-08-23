@@ -48,11 +48,11 @@ class MainActivity : AppCompatActivity() {
         val deviceNameList : ArrayList<String> = ArrayList()
         if (pairedDevices.isNotEmpty()) {
             for (device: BluetoothDevice in pairedDevices) {
-                if(device.name.startsWith("HC-")) {
+//                if(device.name.startsWith("HC-")) {
                     deviceList.add(device)
                     deviceNameList.add(device.name)
                     Log.i("device", "" + device.name)
-                }
+//                }
             }
         } else {
             Toast.makeText(this, "no paired bluetooth devices found", Toast.LENGTH_LONG).show()
