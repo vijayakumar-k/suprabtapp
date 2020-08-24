@@ -7,4 +7,13 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="seekBarStyle" parent="Widget.AppCompat.SeekBar">
+        <item name="android:minHeight">8dip</item>
+        <item name="android:maxHeight">20dip</item>
+    </style>
+
+    <style name="SeekBarTheme" parent="Widget.AppCompat.SeekBar" >
+        <item name="colorAccent">#FFC107</item>
+    </style>
+
 </resources>
